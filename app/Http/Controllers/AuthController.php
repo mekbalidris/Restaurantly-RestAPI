@@ -31,24 +31,23 @@ class AuthController extends Controller
         ]);
     }
 
-    public function login(Request $request){
-        $request->validate([
-            'email' => 'required|string|email',
-            'password' => 'required|string',
-        ]);
+    public function login(Request $request)
+    {
+    $credentials = $request->only('email', 'password');
 
-        if(!Auth::attempt($request->only('email', 'password'))){
-            return response()->json(['message' => 'Invalid login details'], 401);
-        }
-
+    if (Auth::attempt($credentials)) {
+        /** @var \App\Models\User $user **/
         $user = Auth::user();
+
         $token = $user->createToken('auth_token')->plainTextToken;
 
         return response()->json([
-            'message' => 'Login succesful',
             'access_token' => $token,
-            'token_type' => 'Bearer',
+            'user' => $user,
         ]);
+    }
+
+    return response()->json(['message' => 'Invalid login details'], 401);
     }
 
     public function user(Request $request)
